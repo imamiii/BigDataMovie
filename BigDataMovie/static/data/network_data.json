@@ -1,0 +1,136 @@
+{
+  "nodes": [
+    {
+      "id": "1",
+      "name": "张艺谋",
+      "role": "director",
+      "movieCount": 20,
+      "avgRating": 7.8
+    },
+    {
+      "id": "2",
+      "name": "章子怡",
+      "role": "actor",
+      "movieCount": 15,
+      "avgRating": 7.6
+    },
+    {
+      "id": "3",
+      "name": "巩俐",
+      "role": "actor",
+      "movieCount": 18,
+      "avgRating": 8.0
+    },
+    {
+      "id": "4",
+      "name": "梁朝伟",
+      "role": "actor",
+      "movieCount": 22,
+      "avgRating": 8.2
+    },
+    {
+      "id": "5",
+      "name": "周星驰",
+      "role": "director",
+      "movieCount": 15,
+      "avgRating": 8.5
+    },
+    {
+      "id": "6",
+      "name": "吴孟达",
+      "role": "actor",
+      "movieCount": 30,
+      "avgRating": 7.9
+    },
+    {
+      "id": "7",
+      "name": "徐克",
+      "role": "director",
+      "movieCount": 25,
+      "avgRating": 7.7
+    },
+    {
+      "id": "8",
+      "name": "李连杰",
+      "role": "actor",
+      "movieCount": 28,
+      "avgRating": 8.1
+    },
+    {
+      "id": "9",
+      "name": "刘德华",
+      "role": "actor",
+      "movieCount": 40,
+      "avgRating": 7.5
+    },
+    {
+      "id": "10",
+      "name": "王家卫",
+      "role": "director",
+      "movieCount": 12,
+      "avgRating": 8.8
+    }
+  ],
+  "links": [
+    {
+      "source": "1",
+      "target": "2",
+      "value": 3
+    },
+    {
+      "source": "1",
+      "target": "3",
+      "value": 5
+    },
+    {
+      "source": "5",
+      "target": "6",
+      "value": 10
+    },
+    {
+      "source": "7",
+      "target": "8",
+      "value": 7
+    },
+    {
+      "source": "7",
+      "target": "9",
+      "value": 4
+    },
+    {
+      "source": "10",
+      "target": "4",
+      "value": 6
+    },
+    {
+      "source": "10",
+      "target": "9",
+      "value": 3
+    },
+    {
+      "source": "4",
+      "target": "2",
+      "value": 2
+    },
+    {
+      "source": "2",
+      "target": "7",
+      "value": 1
+    },
+    {
+      "source": "9",
+      "target": "8",
+      "value": 4
+    },
+    {
+      "source": "3",
+      "target": "10",
+      "value": 2
+    },
+    {
+      "source": "6",
+      "target": "9",
+      "value": 3
+    }
+  ]
+}

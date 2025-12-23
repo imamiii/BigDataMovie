@@ -13,6 +13,40 @@
       min-height: 100vh;
       padding: 20px;
     }
+    /* ===== 网络统计重新排版 ===== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 6px 10px;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: #495057;
+}
+
+.stat-value {
+  font-size: 15px;
+  font-weight: bold;
+  color: #2c3e50;
+  min-width: 60px;
+  text-align: right;
+}
+
+/* 高亮不再“炸版面” */
+.stat-row.highlight {
+  background: #e3f2fd;
+  border-left: 4px solid #3498db;
+}
     .container {
       max-width: 1400px;
       margin: 0 auto;
@@ -184,8 +218,6 @@
         <div class="legend">
           <div class="legend-item"><div class="legend-color" style="background-color:#ff6b6b;"></div><span>导演</span></div>
           <div class="legend-item"><div class="legend-color" style="background-color:#4ecdc4;"></div><span>演员</span></div>
-          <div class="legend-item"><div class="legend-color" style="background-color:#45b7d1;"></div><span>编剧</span></div>
-          <div class="legend-item"><div class="legend-color" style="background-color:#96ceb4;"></div><span>其他</span></div>
         </div>
       </div>
 
@@ -689,30 +721,46 @@
     const stats = calculateStatistics(data);
 
     document.getElementById('networkStats').innerHTML = `
-      <div class="stat-item ${stats.totalNodes > 100 ? 'highlight' : ''}">
-        <span>总节点数:</span><span>${stats.totalNodes}</span>
-      </div>
-      <div class="stat-item ${stats.totalLinks > 200 ? 'highlight' : ''}">
-        <span>总边数:</span><span>${stats.totalLinks}</span>
-      </div>
-      <div class="stat-item"><span>网络密度:</span><span>${stats.density.toFixed(4)}</span></div>
-      <div class="stat-item"><span>平均度:</span><span>${stats.avgDegree.toFixed(2)}</span></div>
-      <div class="stat-item ${stats.maxDegree > 10 ? 'highlight' : ''}">
-        <span>最大度:</span><span>${stats.maxDegree}</span>
-      </div>
-      <div class="stat-item"><span>边均分(仅展示):</span><span>${stats.avgRating.toFixed(2)}</span></div>
-    `;
+  <div class="stats-grid">
+    <div class="stat-row ${stats.totalNodes > 100 ? 'highlight' : ''}">
+      <span class="stat-label">总节点数</span>
+      <span class="stat-value">${stats.totalNodes}</span>
+    </div>
 
-    document.getElementById('keyInsights').innerHTML = `
-      <div style="color:#e74c3c;margin-bottom:8px;">${stats.insights.highCoop ? '🔴 ' + stats.insights.highCoop : ''}</div>
-      <div style="color:#f39c12;margin-bottom:8px;">${stats.insights.lowRating ? '🟡 ' + stats.insights.lowRating : ''}</div>
-      <div style="color:#27ae60;">${stats.insights.centralNode ? '🟢 ' + stats.insights.centralNode : ''}</div>
-    `;
-  }
+    <div class="stat-row ${stats.totalLinks > 200 ? 'highlight' : ''}">
+      <span class="stat-label">总边数</span>
+      <span class="stat-value">${stats.totalLinks}</span>
+    </div>
 
-  document.getElementById('layoutSelect').addEventListener('change', function () {
-    applyFilters();
-  });
+    <div class="stat-row">
+      <span class="stat-label">平均度</span>
+      <span class="stat-value">${stats.avgDegree.toFixed(2)}</span>
+    </div>
+
+    <div class="stat-row ${stats.maxDegree > 10 ? 'highlight' : ''}">
+      <span class="stat-label">最大度</span>
+      <span class="stat-value">${stats.maxDegree}</span>
+    </div>
+
+    <div class="stat-row">
+      <span class="stat-label">边均分（展示）</span>
+      <span class="stat-value">${stats.avgRating.toFixed(2)}</span>
+    </div>
+  </div>
+`;
+  document.getElementById('keyInsights').innerHTML = `
+  <div style="color:#e74c3c;margin-bottom:6px;">
+    ${stats.insights.highCoop ? '🔴 ' + stats.insights.highCoop : ''}
+  </div>
+  <div style="color:#f39c12;margin-bottom:6px;">
+    ${stats.insights.lowRating ? '🟡 ' + stats.insights.lowRating : ''}
+  </div>
+  <div style="color:#27ae60;">
+    ${stats.insights.centralNode ? '🟢 ' + stats.insights.centralNode : ''}
+  </div>
+`;
+
+  };
 
   function exportImage() {
     if (!chart) return;

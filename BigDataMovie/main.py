@@ -40,11 +40,22 @@ def export_graph_for_echarts(
 
     nodes = []
     for n in nodes_list:
-        role = builder.get_node_role(n) if builder else "unknown"
+        # === 方案A：多身份 ===
+        # primary_role（兼容旧逻辑）
+        primary_role = "unknown"
+        roles = []
+        role_counts = {}
 
+        if G.has_node(n):
+            primary_role = G.nodes[n].get("primary_role", "unknown")
+            roles = G.nodes[n].get("roles", []) or []
+            role_counts = G.nodes[n].get("role_counts", {}) or {}
+
+        # movieCount：建议用 persons_dict 的 unique movie_id 去重
         movie_count = 0
         if builder and builder.persons_dict and n in builder.persons_dict:
-            movie_count = len(builder.persons_dict[n])
+            movie_ids = [m.get("movie_id") for m in builder.persons_dict[n] if m.get("movie_id") is not None]
+            movie_count = len(set(movie_ids))
 
         avg_rating = np.nan
         if ps is not None and n in ps.index:
@@ -54,7 +65,15 @@ def export_graph_for_echarts(
             "id": n,
             "name": n,
             "value": int(G.degree(n)),
-            "role": role,
+
+            # ✅ 兼容旧字段：role = primary_role（用于着色/图例）
+            "role": primary_role,
+
+            # ✅ 新增：多身份
+            "primaryRole": primary_role,
+            "roles": roles,                 # e.g. ["director","actor"]
+            "roleCounts": role_counts,      # e.g. {"director":3,"actor":5}
+
             "movieCount": int(movie_count),
             "avgRating": None if pd.isna(avg_rating) else float(avg_rating)
         })
@@ -67,10 +86,10 @@ def export_graph_for_echarts(
         weight = int(data.get("weight", 1))
         avg_rating = data.get("avg_rating", np.nan)
 
-        # ✅ movies 全量（前端按区间过滤就靠它）
         movies = data.get("movies", [])
-        # ✅ topMovies 仍保留
         top_movies = data.get("top_movies", [])
+
+        role_pairs = data.get("role_pairs", {})  # ✅ 方案A新增（可选给前端展示）
 
         links.append({
             "source": u,
@@ -78,7 +97,10 @@ def export_graph_for_echarts(
             "value": weight,
             "avgRating": None if pd.isna(avg_rating) else float(avg_rating),
             "movies": movies,
-            "topMovies": top_movies
+            "topMovies": top_movies,
+
+            # ✅ 新增：这对人的角色组合统计
+            "rolePairs": role_pairs
         })
 
     out = {"nodes": nodes, "links": links}
@@ -166,7 +188,6 @@ def main():
         logger.info("第五步：导出ECharts可视化数据")
         logger.info("=" * 60)
 
-        # 低分子网（保留）
         if G_low_rating and G_low_rating.number_of_nodes() > 0:
             export_graph_for_echarts(
                 G_low_rating, builder, person_stats,
@@ -177,7 +198,6 @@ def main():
         else:
             logger.warning("⚠️ 低分电影网络为空，跳过导出")
 
-        # 完整网络（前端按区间筛选就靠这个）
         export_graph_for_echarts(
             G, builder, person_stats,
             path="data/full_network_data.json",
@@ -185,7 +205,6 @@ def main():
         )
         logger.info("✅ 已导出完整网络数据到 data/full_network_data.json")
 
-        # 如果你用 Flask 的 static 目录，也顺便拷一份
         os.makedirs("static/data", exist_ok=True)
         with open("data/full_network_data.json", "r", encoding="utf-8") as rf:
             out = json.load(rf)

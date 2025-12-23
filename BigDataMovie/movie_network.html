@@ -428,7 +428,12 @@
         return;
       }
       const name = names[0];
-      const mainNode = currentData.nodes.find(n => n.name === name && n.role === 'director');
+      const mainNode = currentData.nodes.find(n => {
+        if (n.name !== name) return false;
+        const roles = Array.isArray(n.roles) ? n.roles : [];
+        return roles.includes('director') || n.role === 'director'; // 兼容旧字段
+      });
+
       if (!mainNode) {
         alert("未找到该导演（注意：只在当前评分区间内查找）");
         return;
@@ -452,7 +457,12 @@
         return;
       }
       const name = names[0];
-      const mainNode = currentData.nodes.find(n => n.name === name && n.role === 'actor');
+      const mainNode = currentData.nodes.find(n => {
+        if (n.name !== name) return false;
+        const roles = Array.isArray(n.roles) ? n.roles : [];
+        return roles.includes('actor') || n.role === 'actor';
+      });
+
       if (!mainNode) {
         alert("未找到该演员（注意：只在当前评分区间内查找）");
         return;
@@ -556,15 +566,25 @@
         trigger: 'item',
         formatter: function (params) {
           if (params.dataType === 'node') {
+            const roles = Array.isArray(params.data.roles) ? params.data.roles : [];
+            const roleCounts = params.data.roleCounts || {};
+            const rolesText = roles.length ? roles.join(' / ') : (params.data.role || '未知');
+
+            const countsText = roles.length
+              ? roles.map(r => `${r}:${roleCounts[r] ?? 0}`).join(' , ')
+              : '';
+
             return `
               <div class="tooltip-content">
                 <strong>${params.data.name}</strong><br/>
-                类型: ${params.data.role || '未知'}<br/>
+                身份: ${rolesText}<br/>
+                ${countsText ? `身份次数: ${countsText}<br/>` : ''}
                 参与电影(全量统计): ${params.data.movieCount || 0}部<br/>
                 平均评分(全量统计): ${params.data.avgRating ? params.data.avgRating.toFixed(1) : 'N/A'}
               </div>
             `;
-          } else {
+          }
+          else {
             const movies = Array.isArray(params.data.movies) ? params.data.movies : [];
             let moviesInfo = '';
             if (movies.length) {

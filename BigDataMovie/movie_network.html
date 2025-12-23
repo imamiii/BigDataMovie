@@ -1,940 +1,671 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>影人合作网络可视化</title>
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Microsoft YaHei', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-        }
-        .header {
-            background: linear-gradient(90deg, #2c3e50, #3498db);
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        .header h1 {
-            font-size: 2.2em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-        .controls {
-            background: #f8f9fa;
-            padding: 15px 20px;
-            border-bottom: 1px solid #e9ecef;
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .control-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .control-group label {
-            font-weight: bold;
-            color: #495057;
-        }
-        select, input, button {
-            padding: 8px 12px;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-        button {
-            background: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background: #0056b3;
-        }
-        .chart-container {
-            display: flex;
-            height: 700px;
-        }
-        #mainChart {
-            flex: 3;
-            height: 100%;
-        }
-        .sidebar {
-            flex: 1;
-            background: #f8f9fa;
-            border-left: 1px solid #e9ecef;
-            padding: 20px;
-            overflow-y: auto;
-            max-height: 700px;
-        }
-        .stats-panel {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-        .stats-panel h3 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 5px;
-        }
-        .stat-item {
-            display: flex;
-            justify-content: space-between;
-            margin: 8px 0;
-            padding: 5px;
-            background: #f8f9fa;
-            border-radius: 4px;
-        }
-        .highlight {
-            background: #e3f2fd !important;
-            font-weight: bold;
-        }
-        .tooltip-content {
-            max-width: 300px;
-        }
-        .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 200px;
-            font-size: 1.2em;
-            color: #666;
-        }
-        .legend {
-            display: flex;
-            gap: 15px;
-            margin-top: 10px;
-            flex-wrap: wrap;
-        }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .legend-color {
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-        }
-        .footer {
-            text-align: center;
-            padding: 15px;
-            background: #f8f9fa;
-            color: #6c757d;
-            border-top: 1px solid #e9ecef;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>影人合作网络可视化</title>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(90deg, #2c3e50, #3498db);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    .header h1 { font-size: 2.2em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); }
+    .header p { font-size: 1.1em; opacity: 0.9; }
+    .controls {
+      background: #f8f9fa;
+      padding: 15px 20px;
+      border-bottom: 1px solid #e9ecef;
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .control-group { display: flex; align-items: center; gap: 8px; }
+    .control-group label { font-weight: bold; color: #495057; }
+    select, input, button {
+      padding: 8px 12px;
+      border: 1px solid #ced4da;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover { background: #0056b3; }
+    .chart-container { display: flex; height: 700px; }
+    #mainChart { flex: 3; height: 100%; }
+    .sidebar {
+      flex: 1;
+      background: #f8f9fa;
+      border-left: 1px solid #e9ecef;
+      padding: 20px;
+      overflow-y: auto;
+      max-height: 700px;
+    }
+    .stats-panel {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    .stats-panel h3 {
+      color: #2c3e50;
+      margin-bottom: 10px;
+      border-bottom: 2px solid #3498db;
+      padding-bottom: 5px;
+    }
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      margin: 8px 0;
+      padding: 5px;
+      background: #f8f9fa;
+      border-radius: 4px;
+    }
+    .highlight { background: #e3f2fd !important; font-weight: bold; }
+    .tooltip-content { max-width: 320px; }
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 200px;
+      font-size: 1.2em;
+      color: #666;
+    }
+    .legend { display: flex; gap: 15px; margin-top: 10px; flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 5px; }
+    .legend-color { width: 15px; height: 15px; border-radius: 50%; }
+    .footer {
+      text-align: center;
+      padding: 15px;
+      background: #f8f9fa;
+      color: #6c757d;
+      border-top: 1px solid #e9ecef;
+    }
+  </style>
 </head>
+
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🎬 影人合作网络分析系统</h1>
-            <p>基于豆瓣电影数据的影人合作关系可视化分析</p>
-        </div>
+<div class="container">
+  <div class="header">
+    <h1>🎬 影人合作网络分析系统</h1>
+    <p>基于豆瓣电影数据的影人合作关系可视化分析</p>
+  </div>
 
-        <div class="controls">
-            <div class="control-group">
-                <label for="layoutSelect">布局算法：</label>
-                <select id="layoutSelect">
-                    <option value="force">力导向布局</option>
-                    <option value="circular">环形布局</option>
-                    <option value="none">固定位置</option>
-                </select>
-            </div>
-            <div class="control-group">
-                <label for="nodeSize">节点大小：</label>
-                <input type="range" id="nodeSize" min="5" max="50" value="20">
-            </div>
-            <div class="control-group">
-                <label for="minCoop">最小合作次数：</label>
-                <input type="number" id="minCoop" min="1" max="10" value="1">
-            </div>
-            <div class="control-group">
-                <label for="maxRating">最大评分：</label>
-                <input type="number" id="maxRating" min="1" max="10" value="10" step="0.5">
-            </div>
-            <button onclick="applyFilters()">应用筛选</button>
-            <button onclick="resetFilters()">重置</button>
-            <button onclick="exportImage()">导出图片</button>
-            <div class="control-group">
-                <label for="searchInput">搜索影人：</label>
-                <input type="text" id="searchInput" placeholder="输入演员或导演姓名">
-                <select id="roleFilter">
-                    <option value="all">演员 + 导演</option>
-                    <option value="actor">只搜索演员</option>
-                    <option value="director">只搜索导演</option>
-                </select>
-                <button onclick="searchPerson()">搜索</button>
-                <button onclick="resetGraph()">重置</button>
-            </div>
-
-
-        </div>
-
-        <div class="chart-container">
-            <div id="mainChart"></div>
-            <div class="sidebar">
-                <div class="stats-panel">
-                    <h3>📊 网络统计</h3>
-                    <div id="networkStats" class="loading">加载中...</div>
-                </div>
-                <div class="stats-panel">
-                    <h3>🎯 关键发现</h3>
-                    <div id="keyInsights" class="loading">加载中...</div>
-                </div>
-                <div class="stats-panel">
-                    <h3>🎨 图例说明</h3>
-                    <div class="legend">
-                        <div class="legend-item">
-                            <div class="legend-color" style="background-color: #ff6b6b;"></div>
-                            <span>导演</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color" style="background-color: #4ecdc4;"></div>
-                            <span>演员</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color" style="background-color: #45b7d1;"></div>
-                            <span>编剧</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color" style="background-color: #96ceb4;"></div>
-                            <span>其他</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="stats-panel">
-                    <h3>🎬 新电影评分预测</h3>
-
-                    <label>导演（用 / 分隔）</label>
-                    <input id="directorsInput"
-                           placeholder="张艺谋/陈凯歌"
-                           style="width:100%;margin-bottom:8px;">
-
-                    <label>演员（用 / 分隔）</label>
-                    <input id="actorsInput"
-                           placeholder="巩俐/葛优"
-                           style="width:100%;margin-bottom:8px;">
-
-                    <label>关系权重</label>
-                    <input type="range"
-                           id="relationWeight"
-                           min="0" max="1" step="0.1"
-                           value="0.2"
-                           style="width:100%;">
-
-                    <button style="margin-top:10px;width:100%;"
-                            onclick="predictMovie()">
-                        预测评分
-                    </button>
-
-                    <div id="predictResult"
-                         style="margin-top:10px;font-size:14px;">
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="footer">
-            <p>数据来源：豆瓣电影 | 可视化技术：ECharts | 生成时间：<span id="currentTime"></span></p>
-        </div>
+  <div class="controls">
+    <div class="control-group">
+      <label for="layoutSelect">布局算法：</label>
+      <select id="layoutSelect">
+        <option value="force">力导向布局</option>
+        <option value="circular">环形布局</option>
+        <option value="none">固定位置</option>
+      </select>
     </div>
 
-    <script>
-        // 全局变量
-        let chart = null;
-        let originalData = null;
-        let currentData = null;
+    <div class="control-group">
+      <label for="minCoop">最小合作次数：</label>
+      <input type="number" id="minCoop" min="1" max="20" value="1">
+    </div>
 
-        // 初始化图表
-        function initChart() {
-            const chartDom = document.getElementById('mainChart');
-            chart = echarts.init(chartDom);
+    <!-- ✅ 评分区间 -->
+    <div class="control-group">
+      <label for="minRating">最低评分：</label>
+      <input type="number" id="minRating" min="0" max="10" value="0" step="0.1">
+    </div>
+    <div class="control-group">
+      <label for="maxRating">最高评分：</label>
+      <input type="number" id="maxRating" min="0" max="10" value="10" step="0.1">
+    </div>
 
-            // 直接加载数据并显示
-            loadNetworkData();
+    <button onclick="applyFilters()">应用筛选</button>
+    <button onclick="resetFilters()">重置</button>
+    <button onclick="exportImage()">导出图片</button>
 
-            // 响应窗口大小变化
-            window.addEventListener('resize', function() {
-                chart.resize();
-            });
+    <div class="control-group">
+      <label for="searchInput">搜索影人：</label>
+      <input type="text" id="searchInput" placeholder="输入姓名（可用 / 分隔）">
+      <select id="roleFilter">
+        <option value="all">两人联合（A/B）</option>
+        <option value="actor">只搜索演员</option>
+        <option value="director">只搜索导演</option>
+      </select>
+      <button onclick="searchPerson()">搜索</button>
+      <button onclick="resetGraph()">重置图</button>
+    </div>
+  </div>
 
-            // 显示当前时间
-            document.getElementById('currentTime').textContent = new Date().toLocaleString();
-        }
-        function searchPerson() {
-            const rawInput = document.getElementById('searchInput').value.trim();
-            const mode = document.getElementById('roleFilter').value;
-            // director | actor | all
+  <div class="chart-container">
+    <div id="mainChart"></div>
 
-            if (!rawInput) return;
+    <div class="sidebar">
+      <div class="stats-panel">
+        <h3>📊 网络统计</h3>
+        <div id="networkStats" class="loading">加载中...</div>
+      </div>
 
-            const names = rawInput.split('/').map(s => s.trim()).filter(Boolean);
-            let targetNodes = [];
-            let relatedNodes = new Set();
-            let relatedLinks = new Set();
-            let isJointSearch = false;
-            let jointTarget = null;
+      <div class="stats-panel">
+        <h3>🎯 关键发现</h3>
+        <div id="keyInsights" class="loading">加载中...</div>
+      </div>
 
-            /* ========= 联合搜索 ========= */
-            if (mode === 'all') {
-                if (names.length !== 2) {
-                    alert("联合搜索必须输入两个人名，用 / 分隔");
-                    return;
-                }
+      <div class="stats-panel">
+        <h3>🎨 图例说明</h3>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-color" style="background-color:#ff6b6b;"></div><span>导演</span></div>
+          <div class="legend-item"><div class="legend-color" style="background-color:#4ecdc4;"></div><span>演员</span></div>
+          <div class="legend-item"><div class="legend-color" style="background-color:#45b7d1;"></div><span>编剧</span></div>
+          <div class="legend-item"><div class="legend-color" style="background-color:#96ceb4;"></div><span>其他</span></div>
+        </div>
+      </div>
 
-                const [a, b] = names;
-                targetNodes = currentData.nodes.filter(n => n.name === a || n.name === b);
-                
-                if (targetNodes.length < 2) {
-                    alert("未找到指定的影人");
-                    return;
-                }
-                
-                relatedNodes.add(a);
-                relatedNodes.add(b);
-                
-                // 查找两人之间的直接合作关系
-                const directLinks = currentData.links.filter(l => 
-                    (l.source === a && l.target === b) || (l.source === b && l.target === a)
-                );
-                
-                if (directLinks.length === 0) {
-                    alert("这两个人之间没有直接合作关系");
-                } else {
-                    directLinks.forEach(l => {
-                        relatedLinks.add(l.source + "-" + l.target);
-                        relatedLinks.add(l.target + "-" + l.source);
-                    });
-                }
-                
-                isJointSearch = true;
-            }
+      <!-- 评分预测模块：保持不动 -->
+      <div class="stats-panel">
+        <h3>🎬 新电影评分预测</h3>
+        <label>导演（用 / 分隔）</label>
+        <input id="directorsInput" placeholder="张艺谋/陈凯歌" style="width:100%;margin-bottom:8px;">
+        <label>演员（用 / 分隔）</label>
+        <input id="actorsInput" placeholder="巩俐/葛优" style="width:100%;margin-bottom:8px;">
+        <label>关系权重</label>
+        <input type="range" id="relationWeight" min="0" max="1" step="0.1" value="0.2" style="width:100%;">
+        <button style="margin-top:10px;width:100%;" onclick="predictMovie()">预测评分</button>
+        <div id="predictResult" style="margin-top:10px;font-size:14px;"></div>
+      </div>
+    </div>
+  </div>
 
-            /* ========= 导演单独搜索 ========= */
-            else if (mode === 'director') {
-                if (names.length !== 1) {
-                    alert("导演搜索只能输入一个导演名字");
-                    return;
-                }
+  <div class="footer">
+    <p>数据来源：豆瓣电影 | 可视化技术：ECharts | 生成时间：<span id="currentTime"></span></p>
+  </div>
+</div>
 
-                const name = names[0];
-                const mainNode = currentData.nodes.find(
-                    n => n.name === name && n.role === 'director'
-                );
+<script>
+  let chart = null;
+  let originalData = null; // 全量原始数据（不改）
+  let currentData = null;  // 当前筛选后数据（会变）
 
-                if (!mainNode) {
-                    alert("未找到该导演");
-                    return;
-                }
-                
-                targetNodes = [mainNode];
-                relatedNodes.add(name);
-                
-                // 查找所有与该导演相关的边
-                currentData.links.forEach(l => {
-                    if (l.source === name || l.target === name) {
-                        relatedLinks.add(l.source + "-" + l.target);
-                        relatedLinks.add(l.target + "-" + l.source);
-                        relatedNodes.add(l.source);
-                        relatedNodes.add(l.target);
-                    }
-                });
-                
-                jointTarget = name;
-            }
+  function initChart() {
+    chart = echarts.init(document.getElementById('mainChart'));
+    loadNetworkData();
 
-            /* ========= 演员单独搜索 ========= */
-            else if (mode === 'actor') {
-                if (names.length !== 1) {
-                    alert("演员搜索只能输入一个演员名字");
-                    return;
-                }
+    window.addEventListener('resize', function () {
+      chart.resize();
+    });
 
-                const name = names[0];
-                const mainNode = currentData.nodes.find(
-                    n => n.name === name && n.role === 'actor'
-                );
+    document.getElementById('currentTime').textContent = new Date().toLocaleString();
+  }
 
-                if (!mainNode) {
-                    alert("未找到该演员");
-                    return;
-                }
-                
-                targetNodes = [mainNode];
-                relatedNodes.add(name);
-                
-                // 查找所有与该演员相关的边
-                currentData.links.forEach(l => {
-                    if (l.source === name || l.target === name) {
-                        relatedLinks.add(l.source + "-" + l.target);
-                        relatedLinks.add(l.target + "-" + l.source);
-                        relatedNodes.add(l.source);
-                        relatedNodes.add(l.target);
-                    }
-                });
-                
-                jointTarget = name;
-            }
+  function loadNetworkData() {
+    fetch('data/full_network_data.json')
+      .then(res => {
+        if (!res.ok) throw new Error('HTTP error! status: ' + res.status);
+        return res.json();
+      })
+      .then(data => {
+        originalData = data;
+        // 默认先按当前控件过滤一次（=全量）
+        currentData = buildFilteredData();
+        showNetworkData(currentData);
+        updateStatistics(currentData);
+      })
+      .catch(err => {
+        console.error(err);
+        alert('数据加载失败: ' + err.message);
+      });
+  }
 
-            /* ========= 处理所有节点和边 ========= */
-            const processedNodes = currentData.nodes.map(node => {
-                const isRelated = relatedNodes.has(node.name);
-                const isTarget = targetNodes.some(n => n.name === node.name);
-                
-                let symbolSize = Math.max(15, Math.min(50, (node.movieCount || 1) * 2));
-                if (isTarget) {
-                    symbolSize = Math.max(symbolSize * 1.8, 35); // 放大目标节点
-                }
-                
-                return {
-                    ...node,
-                    symbolSize: symbolSize,
-                    itemStyle: {
-                        color: getRoleColor(node.role),
-                        opacity: isRelated ? 1 : 0.3, // 相关节点完全不透明，其他节点半透明
-                        borderWidth: isTarget ? 4 : (isRelated ? 2 : 1),
-                        borderColor: isTarget ? '#ff0000' : '#333'
-                    },
-                    label: {
-                        show: isRelated, // 只显示相关节点的标签
-                        fontSize: isTarget ? 14 : 10,
-                        fontWeight: isTarget ? 'bold' : 'normal'
-                    }
-                };
-            });
-            
-            const processedLinks = currentData.links.map(link => {
-                const linkKey = link.source + "-" + link.target;
-                const isRelated = relatedLinks.has(linkKey);
-                
-                return {
-                    ...link,
-                    lineStyle: {
-                        color: isRelated ? (isJointSearch ? '#ff3333' : getRoleColor(currentData.nodes.find(n => n.name === link.source)?.role || 'other')) : '#ccc',
-                        width: isRelated ? Math.max(3, link.value / 3) : 0.5,
-                        opacity: isRelated ? 1 : 0.1,
-                        type: isRelated ? 'solid' : 'dashed'
-                    },
-                    emphasis: {
-                        lineStyle: {
-                            width: isRelated ? Math.max(5, link.value / 2) : 1
-                        }
-                    }
-                };
-            });
+  // ✅ 评分区间过滤逻辑：基于每条边的 movies 列表
+  function buildFilteredData() {
+    if (!originalData) return {nodes: [], links: []};
 
-            /* ========= 更新图表 ========= */
-            chart.setOption({
-                series: [{
-                    data: processedNodes,
-                    links: processedLinks,
-                    zoom: 1,
-                    center: ['50%', '50%']
-                }]
-            }, false);
+    const minCoop = parseInt(document.getElementById('minCoop').value) || 1;
+    let minRating = parseFloat(document.getElementById('minRating').value);
+    let maxRating = parseFloat(document.getElementById('maxRating').value);
 
-            /* ========= 自动居中 + 放大目标节点 ========= */
-            if (jointTarget) {
-                focusOnNode(jointTarget);
-            } else if (targetNodes.length > 0) {
-                focusOnNode(targetNodes[0].name);
-            }
-        }
+    if (isNaN(minRating)) minRating = 0;
+    if (isNaN(maxRating)) maxRating = 10;
+    if (minRating > maxRating) {
+      const t = minRating; minRating = maxRating; maxRating = t;
+    }
 
+    const filteredLinks = [];
 
-        // 自动居中 + 放大节点
-        function focusOnNode(name) {
-            // 先应用高亮效果
-            chart.dispatchAction({
-                type: 'focusNodeAdjacency',
-                seriesIndex: 0,
-                name: name
-            });
-            
-            // 获取图表实例
-            const option = chart.getOption();
-            const series = option.series[0];
-            
-            // 查找目标节点
-            const targetNode = series.data.find(node => node.name === name);
-            
-            if (targetNode) {
-                // 获取当前图表的视图信息
-                const dom = chart.getDom();
-                const rect = dom.getBoundingClientRect();
-                const width = rect.width;
-                const height = rect.height;
-                
-                // 确保图表容器在可见区域内
-                dom.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center',
-                    inline: 'center'
-                });
-                
-                // 重置图表的中心和缩放，确保节点可见
-                chart.setOption({
-                    series: [{
-                        zoom: 1.2, // 初始缩放，确保关系网络可见
-                        center: ['50%', '50%'],
-                        animationDurationUpdate: 800,
-                        animationEasingUpdate: 'cubicOut'
-                    }]
-                }, false);
-                
-                // 确保图表数据已更新
-                chart.resize();
-                
-                // 使用更精确的方法确保节点居中
-                setTimeout(() => {
-                    // 获取节点在画布上的位置
-                    const pos = chart.convertToPixel({
-                        seriesIndex: 0
-                    }, [targetNode.x || 0, targetNode.y || 0]);
-                    
-                    if (pos && pos.length === 2) {
-                        // 计算需要调整的偏移量
-                        const offsetX = (width / 2 - pos[0]) / chart.getOption().series[0].zoom;
-                        const offsetY = (height / 2 - pos[1]) / chart.getOption().series[0].zoom;
-                        
-                        // 计算新的中心位置
-                        const currentCenter = chart.getOption().series[0].center;
-                        const newCenterX = parseFloat(currentCenter[0]) + (offsetX / width) * 100;
-                        const newCenterY = parseFloat(currentCenter[1]) + (offsetY / height) * 100;
-                        
-                        // 应用新的中心位置和适当的缩放
-                        chart.setOption({
-                            series: [{
-                                center: [`${newCenterX}%`, `${newCenterY}%`],
-                                zoom: 1.8, // 放大以清晰显示关系网络
-                                animationDurationUpdate: 600,
-                                animationEasingUpdate: 'cubicOut'
-                            }]
-                        }, false);
-                    }
-                }, 400);
-                
-                // 最终确认居中
-                setTimeout(() => {
-                    const pos = chart.convertToPixel({
-                        seriesIndex: 0
-                    }, [targetNode.x || 0, targetNode.y || 0]);
-                    
-                    if (pos && pos.length === 2) {
-                        const offsetX = (width / 2 - pos[0]) / chart.getOption().series[0].zoom;
-                        const offsetY = (height / 2 - pos[1]) / chart.getOption().series[0].zoom;
-                        
-                        if (Math.abs(offsetX) > 10 || Math.abs(offsetY) > 10) {
-                            const currentCenter = chart.getOption().series[0].center;
-                            const newCenterX = parseFloat(currentCenter[0]) + (offsetX / width) * 100;
-                            const newCenterY = parseFloat(currentCenter[1]) + (offsetY / height) * 100;
-                            
-                            chart.setOption({
-                                series: [{
-                                    center: [`${newCenterX}%`, `${newCenterY}%`],
-                                    animationDurationUpdate: 300
-                                }]
-                            }, false);
-                        }
-                    }
-                }, 1200);
-            } else {
-                // 如果找不到节点，设置默认的中心和缩放
-                chart.setOption({
-                    series: [{
-                        zoom: 1.5,
-                        center: ['50%', '50%'],
-                        animationDurationUpdate: 800
-                    }]
-                }, false);
-            }
-        }
+    for (const link of originalData.links) {
+      const movies = Array.isArray(link.movies) ? link.movies : [];
+      // 过滤区间内电影（按“电影评分”）
+      const inRange = movies.filter(m => {
+        const r = m && m.rating;
+        if (r === null || r === undefined) return false;
+        const rr = parseFloat(r);
+        if (isNaN(rr)) return false;
+        return rr >= minRating && rr <= maxRating;
+      });
 
-        // 重置图表显示
-        function resetGraph() {
-            chart.setOption({
-                series: [{ data: currentData.nodes, links: currentData.links, zoom: 1, center: ['50%', '50%'] }]
-            }, false);
-        }
+      const coopInRange = inRange.length;
+      if (coopInRange < minCoop) continue;
 
-        // 加载网络数据
-        function loadNetworkData() {
-            console.log('开始加载数据...');
-            fetch('data/full_network_data.json')
-                .then(response => {
-                    console.log('数据加载响应:', response);
-                    if (!response.ok) {
-                        throw new Error('HTTP error! status: ' + response.status);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('数据解析成功:', data);
-                    console.log('节点数量:', data.nodes.length);
-                    console.log('边数量:', data.links.length);
-                    originalData = data;
-                    currentData = JSON.parse(JSON.stringify(data)); // 深拷贝
+      // 仅用于显示的 avgRating：区间内电影均值（不参与筛选）
+      const avg = coopInRange
+        ? inRange.reduce((s, m) => s + parseFloat(m.rating), 0) / coopInRange
+        : null;
 
-                    // 直接显示数据
-                    showNetworkData(data);
-                    updateStatistics(data);
-                })
-                .catch(error => {
-                    console.error('加载数据失败:', error);
-                    alert('数据加载失败: ' + error.message);
-                });
-        }
+      const topMovies = [...inRange].sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1)).slice(0, 5);
 
-        // 直接显示网络数据
-        function showNetworkData(data) {
-            console.log('开始显示网络数据...');
-            if (!chart) {
-                console.error('图表未初始化');
-                return;
-            }
+      filteredLinks.push({
+        ...link,
+        value: coopInRange,     // ✅ 合作次数 = 区间内电影数
+        movies: inRange,        // ✅ 只保留区间内电影
+        avgRating: avg,
+        topMovies: topMovies
+      });
+    }
 
-            // 计算节点度
-            const nodeDegrees = {};
-            data.links.forEach(link => {
-                nodeDegrees[link.source] = (nodeDegrees[link.source] || 0) + 1;
-                nodeDegrees[link.target] = (nodeDegrees[link.target] || 0) + 1;
-            });
-            console.log('节点度计算完成:', nodeDegrees);
+    const nodeIds = new Set();
+    filteredLinks.forEach(l => { nodeIds.add(l.source); nodeIds.add(l.target); });
 
-            console.log('准备图表配置...');
-            // 配置图表
-            const option = {
-                title: {
-                    text: '影人合作网络',
-                    subtext: `共 ${data.nodes.length} 个节点, ${data.links.length} 条关系`,
-                    left: 'center',
-                    textStyle: {
-                        fontSize: 20,
-                        fontWeight: 'bold'
-                    }
-                },
-                tooltip: {
-                    trigger: 'item',
-                    formatter: function (params) {
-                        if (params.dataType === 'node') {
-                            return `
-                                <div class="tooltip-content">
-                                    <strong>${params.data.name}</strong><br/>
-                                    类型: ${params.data.role || '未知'}<br/>
-                                    参与电影: ${params.data.movieCount || 0}部<br/>
-                                    平均评分: ${params.data.avgRating ? params.data.avgRating.toFixed(1) : 'N/A'}
-                                </div>
-                            `;
-                        } else {
-                            let moviesInfo = '';
-                            if (params.data.topMovies && params.data.topMovies.length > 0) {
-                                moviesInfo = '<br/><br/>合作电影:';
-                                params.data.topMovies.forEach((movie, index) => {
-                                    if (index < 3) { // 只显示前3部电影
-                                        moviesInfo += `<br/>${movie.movie_name} (${movie.year}) - ${movie.rating || 'N/A'}`;
-                                    }
-                                });
-                            }
-                            return `
-                                <div class="tooltip-content">
-                                    <strong>${params.data.source} ↔ ${params.data.target}</strong><br/>
-                                    合作次数: ${params.data.value || 1}次<br/>
-                                    平均评分: ${params.data.avgRating ? params.data.avgRating.toFixed(1) : 'N/A'}
-                                    ${moviesInfo}
-                                </div>
-                            `;
-                        }
-                    }
-                },
-                series: [{
-                    type: 'graph',
-                    layout: 'force',
-                    force: {
-                        repulsion: 300,  // 增加排斥力，避免节点重叠
-                        edgeLength: 120,  // 增加边长度
-                        gravity: 0.1,     // 减小重力
-                        friction: 0.6     // 增加摩擦力
-                    },
-                    roam: true,
-                    data: data.nodes.map(node => ({
-                        id: node.id,
-                        name: node.name,
-                        symbolSize: Math.max(15, Math.min(50, (nodeDegrees[node.id] || 1) * 2)),  // 增大节点大小
-                        itemStyle: {
-                            color: getRoleColor(node.role),
-                            opacity: 0.8,  // 确保节点不透明
-                            borderColor: '#333',
-                            borderWidth: 1
-                        },
-                        role: node.role,
-                        movieCount: node.movieCount,
-                        avgRating: node.avgRating
-                    })),
-                    links: data.links.map(link => ({
-                        ...link,
-                        lineStyle: {
-                            color: '#666',
-                            width: Math.max(1, Math.min(3, link.value / 5)),
-                            opacity: 0.7
-                        }
-                    })),
-                    label: {
-                        show: true,
-                        fontSize: 10,
-                        formatter: '{b}',
-                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                        padding: [2, 5]
-                    },
-                    emphasis: {
-                        focus: 'adjacency',
-                        itemStyle: {
-                            borderWidth: 2,
-                            shadowBlur: 10,
-                            shadowColor: 'rgba(0, 0, 0, 0.5)'
-                        }
-                    }
-                }]
-            };
+    const filteredNodes = originalData.nodes.filter(n => nodeIds.has(n.id || n.name));
 
-            console.log('图表配置完成，开始设置选项...');
-            // 应用配置
-            chart.setOption(option);
-            console.log('图表设置完成');
-        }
+    return { nodes: filteredNodes, links: filteredLinks };
+  }
 
-        // 根据角色获取颜色
-        function getRoleColor(role) {
-            const colors = {
-                'director': '#ff6b6b',
-                'actor': '#4ecdc4',
-                'writer': '#45b7d1',
-                'other': '#96ceb4'
-            };
-            return colors[role] || colors['other'];
-        }
+  function applyFilters() {
+    if (!originalData) return;
+    currentData = buildFilteredData();
+    showNetworkData(currentData);
+    updateStatistics(currentData);
+  }
 
-        // 更新统计信息
-        function updateStatistics(data) {
-            const stats = calculateStatistics(data);
+  function resetFilters() {
+    document.getElementById('minCoop').value = 1;
+    document.getElementById('minRating').value = 0;
+    document.getElementById('maxRating').value = 10;
+    applyFilters();
+  }
 
-            document.getElementById('networkStats').innerHTML = `
-                <div class="stat-item ${stats.totalNodes > 100 ? 'highlight' : ''}">
-                    <span>总节点数:</span>
-                    <span>${stats.totalNodes}</span>
-                </div>
-                <div class="stat-item ${stats.totalLinks > 200 ? 'highlight' : ''}">
-                    <span>总边数:</span>
-                    <span>${stats.totalLinks}</span>
-                </div>
-                <div class="stat-item">
-                    <span>网络密度:</span>
-                    <span>${stats.density.toFixed(4)}</span>
-                </div>
-                <div class="stat-item">
-                    <span>平均度:</span>
-                    <span>${stats.avgDegree.toFixed(2)}</span>
-                </div>
-                <div class="stat-item ${stats.maxDegree > 10 ? 'highlight' : ''}">
-                    <span>最大度:</span>
-                    <span>${stats.maxDegree}</span>
-                </div>
-                <div class="stat-item">
-                    <span>平均评分:</span>
-                    <span>${stats.avgRating.toFixed(2)}</span>
-                </div>
-            `;
+  function resetGraph() {
+    // 重置到“当前筛选结果”（不是全量）
+    showNetworkData(currentData);
+    updateStatistics(currentData);
+  }
 
-            document.getElementById('keyInsights').innerHTML = `
-                <div style="color: #e74c3c; margin-bottom: 8px;">
-                    ${stats.insights.highCoop ? '🔴 ' + stats.insights.highCoop : ''}
-                </div>
-                <div style="color: #f39c12; margin-bottom: 8px;">
-                    ${stats.insights.lowRating ? '🟡 ' + stats.insights.lowRating : ''}
-                </div>
-                <div style="color: #27ae60;">
-                    ${stats.insights.centralNode ? '🟢 ' + stats.insights.centralNode : ''}
-                </div>
-            `;
-        }
+  // ====== 搜索影人：先按区间刷新 currentData，再做高亮/聚焦 ======
+  function searchPerson() {
+    const rawInput = document.getElementById('searchInput').value.trim();
+    const mode = document.getElementById('roleFilter').value;
+    if (!rawInput) return;
 
-        // 计算统计信息
-        function calculateStatistics(data) {
-            const totalNodes = data.nodes.length;
-            const totalLinks = data.links.length;
+    // 先确保 currentData = 当前区间筛选结果
+    currentData = buildFilteredData();
+    showNetworkData(currentData);
+    updateStatistics(currentData);
 
-            // 计算度分布
-            const nodeMap = new Map();
-            data.nodes.forEach(node => nodeMap.set(node.id, { degree: 0 }));
+    const names = rawInput.split('/').map(s => s.trim()).filter(Boolean);
 
-            data.links.forEach(link => {
-                if (nodeMap.has(link.source)) nodeMap.get(link.source).degree++;
-                if (nodeMap.has(link.target)) nodeMap.get(link.target).degree++;
-            });
+    let targetNodes = [];
+    let relatedNodes = new Set();
+    let relatedLinks = new Set();
+    let isJointSearch = false;
+    let jointTarget = null;
 
-            const degrees = Array.from(nodeMap.values()).map(n => n.degree);
-            const avgDegree = degrees.reduce((a, b) => a + b, 0) / totalNodes;
-            const maxDegree = Math.max(...degrees);
+    if (mode === 'all') {
+      if (names.length !== 2) {
+        alert("联合搜索必须输入两个人名，用 / 分隔");
+        return;
+      }
+      const [a, b] = names;
+      targetNodes = currentData.nodes.filter(n => n.name === a || n.name === b);
+      if (targetNodes.length < 2) {
+        alert("未找到指定的影人（注意：只在当前评分区间内查找）");
+        return;
+      }
+      relatedNodes.add(a); relatedNodes.add(b);
 
-            // 计算网络密度（无向图）
-            const maxPossibleLinks = totalNodes * (totalNodes - 1) / 2;
-            const density = totalLinks / maxPossibleLinks;
-
-            // 计算平均评分
-            const ratings = data.links.map(link => link.avgRating).filter(r => r);
-            const avgRating = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
-
-            // 生成洞察
-            const insights = {
-                highCoop: totalLinks > 150 ? '检测到大量高频合作关系' : '',
-                lowRating: avgRating < 6 ? '存在低分电影合作模式' : '',
-                centralNode: maxDegree > 15 ? `核心影人度中心性: ${maxDegree}` : ''
-            };
-
-            return { totalNodes, totalLinks, density, avgDegree, maxDegree, avgRating, insights };
-        }
-
-        // 应用筛选条件
-        function applyFilters() {
-            if (!currentData) return;
-
-            const minCoop = parseInt(document.getElementById('minCoop').value) || 1;
-            const maxRating = parseFloat(document.getElementById('maxRating').value) || 10;
-
-            // 过滤数据
-            const filteredLinks = currentData.links.filter(link => {
-                return link.value >= minCoop && link.avgRating <= maxRating;
-            });
-
-            // 获取所有涉及的节点ID
-            const nodeIds = new Set();
-            filteredLinks.forEach(link => {
-                nodeIds.add(link.source);
-                nodeIds.add(link.target);
-            });
-
-            const filteredNodes = currentData.nodes.filter(node => nodeIds.has(node.id));
-
-            // 更新统计信息
-            const filteredData = { nodes: filteredNodes, links: filteredLinks };
-            updateStatistics(filteredData);
-
-            // 显示过滤后的数据
-            showNetworkData(filteredData);
-        }
-
-        // 添加布局算法切换功能
-        document.getElementById('layoutSelect').addEventListener('change', function() {
-            if (chart) {
-                const layout = this.value;
-                chart.setOption({
-                    series: [{
-                        layout: layout
-                    }]
-                });
-            }
+      const directLinks = currentData.links.filter(l =>
+        (l.source === a && l.target === b) || (l.source === b && l.target === a)
+      );
+      if (directLinks.length === 0) {
+        alert("这两个人在当前评分区间内没有直接合作关系");
+      } else {
+        directLinks.forEach(l => {
+          relatedLinks.add(l.source + "-" + l.target);
+          relatedLinks.add(l.target + "-" + l.source);
         });
+      }
+      isJointSearch = true;
 
-        // 重置筛选条件
-        function resetFilters() {
-            document.getElementById('minCoop').value = 1;
-            document.getElementById('maxRating').value = 10;
-            document.getElementById('nodeSize').value = 20;
-            document.getElementById('layoutSelect').value = 'force';
+    } else if (mode === 'director') {
+      if (names.length !== 1) {
+        alert("导演搜索只能输入一个名字");
+        return;
+      }
+      const name = names[0];
+      const mainNode = currentData.nodes.find(n => n.name === name && n.role === 'director');
+      if (!mainNode) {
+        alert("未找到该导演（注意：只在当前评分区间内查找）");
+        return;
+      }
+      targetNodes = [mainNode];
+      relatedNodes.add(name);
 
-            applyFilters();
+      currentData.links.forEach(l => {
+        if (l.source === name || l.target === name) {
+          relatedLinks.add(l.source + "-" + l.target);
+          relatedLinks.add(l.target + "-" + l.source);
+          relatedNodes.add(l.source);
+          relatedNodes.add(l.target);
         }
+      });
+      jointTarget = name;
 
-        // 导出图片
-        function exportImage() {
-            if (chart) {
-                const url = chart.getDataURL({
-                    type: 'png',
-                    pixelRatio: 2,
-                    backgroundColor: '#fff'
-                });
+    } else if (mode === 'actor') {
+      if (names.length !== 1) {
+        alert("演员搜索只能输入一个名字");
+        return;
+      }
+      const name = names[0];
+      const mainNode = currentData.nodes.find(n => n.name === name && n.role === 'actor');
+      if (!mainNode) {
+        alert("未找到该演员（注意：只在当前评分区间内查找）");
+        return;
+      }
+      targetNodes = [mainNode];
+      relatedNodes.add(name);
 
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `影人合作网络_${new Date().toISOString().split('T')[0]}.png`;
-                link.click();
+      currentData.links.forEach(l => {
+        if (l.source === name || l.target === name) {
+          relatedLinks.add(l.source + "-" + l.target);
+          relatedLinks.add(l.target + "-" + l.source);
+          relatedNodes.add(l.source);
+          relatedNodes.add(l.target);
+        }
+      });
+      jointTarget = name;
+    }
+
+    const processedNodes = currentData.nodes.map(node => {
+      const isRelated = relatedNodes.has(node.name);
+      const isTarget = targetNodes.some(n => n.name === node.name);
+
+      let symbolSize = Math.max(15, Math.min(55, (node.movieCount || 1) * 2));
+      if (isTarget) symbolSize = Math.max(symbolSize * 1.8, 38);
+
+      return {
+        ...node,
+        symbolSize,
+        itemStyle: {
+          color: getRoleColor(node.role),
+          opacity: isRelated ? 1 : 0.25,
+          borderWidth: isTarget ? 4 : (isRelated ? 2 : 1),
+          borderColor: isTarget ? '#ff0000' : '#333'
+        },
+        label: {
+          show: isRelated,
+          fontSize: isTarget ? 14 : 10,
+          fontWeight: isTarget ? 'bold' : 'normal'
+        }
+      };
+    });
+
+    const processedLinks = currentData.links.map(link => {
+      const linkKey = link.source + "-" + link.target;
+      const isRelated = relatedLinks.has(linkKey);
+
+      return {
+        ...link,
+        lineStyle: {
+          color: isRelated
+            ? (isJointSearch ? '#ff3333' : getRoleColor(currentData.nodes.find(n => n.name === link.source)?.role || 'other'))
+            : '#ccc',
+          width: isRelated ? Math.max(3, (link.value || 1)) : 0.5,
+          opacity: isRelated ? 1 : 0.08,
+          type: isRelated ? 'solid' : 'dashed'
+        }
+      };
+    });
+
+    chart.setOption({
+      series: [{
+        data: processedNodes,
+        links: processedLinks,
+        zoom: 1,
+        center: ['50%', '50%']
+      }]
+    }, false);
+
+    if (jointTarget) focusOnNode(jointTarget);
+    else if (targetNodes.length > 0) focusOnNode(targetNodes[0].name);
+  }
+
+  function focusOnNode(name) {
+    chart.dispatchAction({ type: 'focusNodeAdjacency', seriesIndex: 0, name });
+
+    chart.setOption({
+      series: [{ zoom: 1.6, center: ['50%', '50%'], animationDurationUpdate: 500 }]
+    }, false);
+  }
+
+  function showNetworkData(data) {
+    if (!chart) return;
+
+    const nodeDegrees = {};
+    data.links.forEach(l => {
+      nodeDegrees[l.source] = (nodeDegrees[l.source] || 0) + 1;
+      nodeDegrees[l.target] = (nodeDegrees[l.target] || 0) + 1;
+    });
+
+    const option = {
+      title: {
+        text: '影人合作网络',
+        subtext: `当前筛选：${data.nodes.length} 个节点, ${data.links.length} 条关系`,
+        left: 'center',
+        textStyle: { fontSize: 20, fontWeight: 'bold' }
+      },
+      tooltip: {
+        trigger: 'item',
+        formatter: function (params) {
+          if (params.dataType === 'node') {
+            return `
+              <div class="tooltip-content">
+                <strong>${params.data.name}</strong><br/>
+                类型: ${params.data.role || '未知'}<br/>
+                参与电影(全量统计): ${params.data.movieCount || 0}部<br/>
+                平均评分(全量统计): ${params.data.avgRating ? params.data.avgRating.toFixed(1) : 'N/A'}
+              </div>
+            `;
+          } else {
+            const movies = Array.isArray(params.data.movies) ? params.data.movies : [];
+            let moviesInfo = '';
+            if (movies.length) {
+              moviesInfo += '<br/><br/>区间内合作电影(最多5部)：';
+              movies.slice(0, 5).forEach(m => {
+                moviesInfo += `<br/>${m.movie_name} (${m.year}) - ${m.rating}`;
+              });
             }
+            return `
+              <div class="tooltip-content">
+                <strong>${params.data.source} ↔ ${params.data.target}</strong><br/>
+                区间内合作次数: ${params.data.value || 0} 次<br/>
+                区间内均分(仅展示): ${params.data.avgRating ? params.data.avgRating.toFixed(2) : 'N/A'}
+                ${moviesInfo}
+              </div>
+            `;
+          }
         }
-        // ===== 新增：新电影评分预测（独立模块，不影响原有 JS）=====
-        function predictMovie() {
-            const directors = document.getElementById("directorsInput")
-                .value.split("/")
-                .map(s => s.trim())
-                .filter(Boolean);
+      },
+      series: [{
+        type: 'graph',
+        layout: document.getElementById('layoutSelect').value || 'force',
+        force: { repulsion: 300, edgeLength: 120, gravity: 0.1, friction: 0.6 },
+        roam: true,
+        data: data.nodes.map(node => ({
+          ...node,
+          id: node.id || node.name,
+          name: node.name,
+          symbolSize: Math.max(15, Math.min(55, (nodeDegrees[node.id || node.name] || 1) * 2)),
+          itemStyle: {
+            color: getRoleColor(node.role),
+            opacity: 0.85,
+            borderColor: '#333',
+            borderWidth: 1
+          }
+        })),
+        links: data.links.map(link => ({
+          ...link,
+          lineStyle: {
+            color: '#666',
+            width: Math.max(1, Math.min(6, link.value || 1)),
+            opacity: 0.7
+          }
+        })),
+        label: {
+          show: true,
+          fontSize: 10,
+          formatter: '{b}',
+          backgroundColor: 'rgba(255,255,255,0.8)',
+          padding: [2, 5]
+        },
+        emphasis: { focus: 'adjacency' }
+      }]
+    };
 
-            const actors = document.getElementById("actorsInput")
-                .value.split("/")
-                .map(s => s.trim())
-                .filter(Boolean);
+    chart.setOption(option, true);
+  }
 
-            const wRelation = parseFloat(
-                document.getElementById("relationWeight").value
-            );
+  function getRoleColor(role) {
+    const colors = {
+      'director': '#ff6b6b',
+      'actor': '#4ecdc4',
+      'writer': '#45b7d1',
+      'other': '#96ceb4',
+      'unknown': '#96ceb4'
+    };
+    return colors[role] || colors['other'];
+  }
 
-            const weights = {
-                actor: (1 - wRelation) / 2,
-                director: (1 - wRelation) / 2,
-                relation: wRelation
-            };
+  function calculateStatistics(data) {
+    const totalNodes = data.nodes.length;
+    const totalLinks = data.links.length;
 
-            document.getElementById("predictResult").innerText = "⏳ 正在预测中...";
+    const nodeMap = new Map();
+    data.nodes.forEach(n => nodeMap.set(n.id || n.name, { degree: 0 }));
 
-            fetch("http://127.0.0.1:5000/predict", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    directors,
-                    actors,
-                    weights
-                })
-            })
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById("predictResult").innerHTML =
-                    `⭐ 预测评分：<b>${data.final_score}</b><br>
-                     演员评分：${data.actor_score}<br>
-                     导演评分：${data.director_score}<br>
-                     关系评分：${data.relation_score}`;
-            })
-            .catch(() => {
-                document.getElementById("predictResult").innerText =
-                    "❌ 请求失败（请检查后端）";
-           });
-        }
+    data.links.forEach(l => {
+      if (nodeMap.has(l.source)) nodeMap.get(l.source).degree++;
+      if (nodeMap.has(l.target)) nodeMap.get(l.target).degree++;
+    });
 
-        // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', initChart);
-    </script>
+    const degrees = Array.from(nodeMap.values()).map(x => x.degree);
+    const avgDegree = totalNodes ? degrees.reduce((a, b) => a + b, 0) / totalNodes : 0;
+    const maxDegree = degrees.length ? Math.max(...degrees) : 0;
+
+    const maxPossibleLinks = totalNodes * (totalNodes - 1) / 2;
+    const density = (totalNodes > 1) ? (totalLinks / maxPossibleLinks) : 0;
+
+    const ratings = data.links.map(l => l.avgRating).filter(r => r !== null && r !== undefined && !isNaN(r));
+    const avgRating = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+
+    const insights = {
+      highCoop: totalLinks > 150 ? '检测到大量高频合作关系' : '',
+      lowRating: avgRating < 6 ? '当前筛选范围内存在明显低分合作模式' : '',
+      centralNode: maxDegree > 15 ? `核心影人度中心性: ${maxDegree}` : ''
+    };
+
+    return { totalNodes, totalLinks, density, avgDegree, maxDegree, avgRating, insights };
+  }
+
+  function updateStatistics(data) {
+    const stats = calculateStatistics(data);
+
+    document.getElementById('networkStats').innerHTML = `
+      <div class="stat-item ${stats.totalNodes > 100 ? 'highlight' : ''}">
+        <span>总节点数:</span><span>${stats.totalNodes}</span>
+      </div>
+      <div class="stat-item ${stats.totalLinks > 200 ? 'highlight' : ''}">
+        <span>总边数:</span><span>${stats.totalLinks}</span>
+      </div>
+      <div class="stat-item"><span>网络密度:</span><span>${stats.density.toFixed(4)}</span></div>
+      <div class="stat-item"><span>平均度:</span><span>${stats.avgDegree.toFixed(2)}</span></div>
+      <div class="stat-item ${stats.maxDegree > 10 ? 'highlight' : ''}">
+        <span>最大度:</span><span>${stats.maxDegree}</span>
+      </div>
+      <div class="stat-item"><span>边均分(仅展示):</span><span>${stats.avgRating.toFixed(2)}</span></div>
+    `;
+
+    document.getElementById('keyInsights').innerHTML = `
+      <div style="color:#e74c3c;margin-bottom:8px;">${stats.insights.highCoop ? '🔴 ' + stats.insights.highCoop : ''}</div>
+      <div style="color:#f39c12;margin-bottom:8px;">${stats.insights.lowRating ? '🟡 ' + stats.insights.lowRating : ''}</div>
+      <div style="color:#27ae60;">${stats.insights.centralNode ? '🟢 ' + stats.insights.centralNode : ''}</div>
+    `;
+  }
+
+  document.getElementById('layoutSelect').addEventListener('change', function () {
+    applyFilters();
+  });
+
+  function exportImage() {
+    if (!chart) return;
+    const url = chart.getDataURL({ type: 'png', pixelRatio: 2, backgroundColor: '#fff' });
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `影人合作网络_${new Date().toISOString().split('T')[0]}.png`;
+    a.click();
+  }
+
+  // ===== 保留你的预测功能 =====
+  function predictMovie() {
+    const directors = document.getElementById("directorsInput").value.split("/").map(s => s.trim()).filter(Boolean);
+    const actors = document.getElementById("actorsInput").value.split("/").map(s => s.trim()).filter(Boolean);
+    const wRelation = parseFloat(document.getElementById("relationWeight").value);
+
+    const weights = {
+      actor: (1 - wRelation) / 2,
+      director: (1 - wRelation) / 2,
+      relation: wRelation
+    };
+
+    document.getElementById("predictResult").innerText = "⏳ 正在预测中...";
+
+    fetch("http://127.0.0.1:5000/predict", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ directors, actors, weights })
+    })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("predictResult").innerHTML =
+          `⭐ 预测评分：<b>${data.final_score}</b><br>
+           演员评分：${data.actor_score}<br>
+           导演评分：${data.director_score}<br>
+           关系评分：${data.relation_score}`;
+      })
+      .catch(() => {
+        document.getElementById("predictResult").innerText = "❌ 请求失败（请检查后端）";
+      });
+  }
+
+  document.addEventListener('DOMContentLoaded', initChart);
+</script>
 </body>
 </html>

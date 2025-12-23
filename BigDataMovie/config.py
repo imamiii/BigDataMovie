@@ -4,9 +4,9 @@ import os
 # 项目路径配置
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, 'data')
-EXCEL_FILE = os.path.join(DATA_DIR, 'ChineseMoviesData.xlsx')
+EXCEL_FILE = os.path.join(DATA_DIR, 'ChineseMoviesData.csv')
 
-# 列名映射（根据新的ChineseMoviesData.xlsx调整）
+# 列名映射（根据新的ChineseMoviesData.csv调整）
 COLUMN_NAMES = {
     'Name': 'name',  # 电影名称
     'Director': 'directors',  # 导演

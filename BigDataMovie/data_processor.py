@@ -68,6 +68,26 @@ class DataProcessor:
                 persons.append(person)
         return persons
 
+    def _extract_types(self, types_str):
+        """把类型字段统一解析为 list[str]，兼容 / 、 , | 等分隔符"""
+        if pd.isna(types_str):
+            return []
+        s = str(types_str).strip()
+        if not s or s in ("未知", "nan"):
+            return []
+        # 兼容多种分隔符
+        for sep in ["、", ",", "，", "|"]:
+            s = s.replace(sep, "/")
+        parts = [p.strip() for p in s.split("/") if p.strip()]
+        # 去重但保序
+        seen = set()
+        out = []
+        for p in parts:
+            if p not in seen:
+                seen.add(p)
+                out.append(p)
+        return out
+
     def build_cooperation_edges(self):
         """构建影人合作关系边列表 - 计算导演和演员之间的一对一关系，以及导演之间的合作"""
         edges = []
@@ -76,6 +96,7 @@ class DataProcessor:
             movie_id = row.get('id', idx)
             movie_name = row.get('name', f'电影_{idx}')
             rating = row.get('rating', np.nan)
+            types_list = self._extract_types(row.get('types', ''))
 
             # 只提取导演和演员
             directors = self._extract_persons(row.get('directors', ''))
@@ -95,6 +116,7 @@ class DataProcessor:
                         'movie_id': movie_id,
                         'movie_name': movie_name,
                         'rating': rating,
+                        'types': types_list,
                         'year': row.get('year', 0),
                         'cooperation_id': f"{director1}_{director2}_{movie_id}"
                     }
@@ -116,6 +138,7 @@ class DataProcessor:
                         'movie_id': movie_id,
                         'movie_name': movie_name,
                         'rating': rating,
+                        'types': types_list,
                         'year': row.get('year', 0),
                         'cooperation_id': f"{director}_{actor}_{movie_id}"
                     }

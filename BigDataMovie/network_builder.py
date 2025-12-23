@@ -56,9 +56,37 @@ class NetworkBuilder:
 
         # movies 全量列表（去重：同一对人同一部电影只保留一次）
         def build_movies_list(g: pd.DataFrame):
-            g2 = g[["movie_id", "movie_name", "rating", "year"]].drop_duplicates()
-            movies = g2.to_dict("records")
-            # 统一字段名，和前端一致：movie_name / rating / year / movie_id
+            # 先按 movie_id 去重（不包含 types，避免 list 无法 hash）
+            cols_basic = ["movie_id", "movie_name", "rating", "year"]
+            g2 = g[cols_basic + (["types"] if "types" in g.columns else [])].copy()
+
+            # movie_id 兜底
+            if "movie_id" not in g2.columns:
+                g2["movie_id"] = g2.index
+
+            # drop_duplicates 只用可 hash 的列
+            g2 = g2.drop_duplicates(subset=["movie_id"])
+
+            # types 兜底：保证是 list[str]
+            def norm_types(x):
+                if x is None or (isinstance(x, float) and np.isnan(x)):
+                    return []
+                if isinstance(x, list):
+                    return x
+                s = str(x).strip()
+                if not s or s in ("未知", "nan"):
+                    return []
+                for sep in ["、", ",", "，", "|"]:
+                    s = s.replace(sep, "/")
+                return [p.strip() for p in s.split("/") if p.strip()]
+
+            if "types" in g2.columns:
+                g2["types"] = g2["types"].apply(norm_types)
+            else:
+                g2["types"] = [[] for _ in range(len(g2))]
+
+            # 输出字段统一
+            movies = g2[["movie_id", "movie_name", "rating", "year", "types"]].to_dict("records")
             return movies
 
         movies_series = grouped.apply(build_movies_list)

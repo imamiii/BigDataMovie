@@ -144,6 +144,14 @@
     <button onclick="resetFilters()">重置</button>
     <button onclick="exportImage()">导出图片</button>
 
+    <!-- ✅ 类型筛选（多选） -->
+    <div class="control-group">
+      <label for="typeSelect">电影类型：</label>
+      <select id="typeSelect" multiple size="1" style="min-width:180px;">
+        <!-- 运行时动态填充 -->
+      </select>
+    </div>
+
     <div class="control-group">
       <label for="searchInput">搜索影人：</label>
       <input type="text" id="searchInput" placeholder="输入姓名（可用 / 分隔）">
@@ -225,6 +233,7 @@
       })
       .then(data => {
         originalData = data;
+        initTypeOptions();
         // 默认先按当前控件过滤一次（=全量）
         currentData = buildFilteredData();
         showNetworkData(currentData);
@@ -236,7 +245,46 @@
       });
   }
 
-  // ✅ 评分区间过滤逻辑：基于每条边的 movies 列表
+  function normalizeTypesJS(t) {
+    if (!t) return [];
+    if (Array.isArray(t)) return t.map(x => String(x).trim()).filter(Boolean);
+
+    let s = String(t).trim();
+    if (!s || s === '未知' || s === 'nan') return [];
+    ['、', ',', '，', '|'].forEach(sep => s = s.split(sep).join('/'));
+    return s.split('/').map(x => x.trim()).filter(Boolean);
+  }
+
+  function initTypeOptions() {
+    const sel = document.getElementById('typeSelect');
+    if (!sel || !originalData) return;
+
+    const set = new Set();
+    for (const link of originalData.links || []) {
+      const movies = Array.isArray(link.movies) ? link.movies : [];
+      for (const m of movies) {
+        const ts = normalizeTypesJS(m && m.types);
+        ts.forEach(x => set.add(x));
+      }
+    }
+
+    const types = Array.from(set).sort((a, b) => a.localeCompare(b, 'zh-Hans-CN'));
+
+    sel.innerHTML = '';
+    // 不选任何类型 = 不按类型筛（全选效果）
+    types.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t;
+      opt.textContent = t;
+      sel.appendChild(opt);
+    });
+
+    // 类型变化也自动应用筛选
+    sel.addEventListener('change', applyFilters);
+  }
+
+
+  // ✅ 过滤逻辑：基于每条边的 movies 列表
   function buildFilteredData() {
     if (!originalData) return {nodes: [], links: []};
 
@@ -250,18 +298,35 @@
       const t = minRating; minRating = maxRating; maxRating = t;
     }
 
+    const typeSelect = document.getElementById('typeSelect');
+    const selectedTypes = typeSelect
+      ? Array.from(typeSelect.selectedOptions).map(o => o.value).filter(Boolean)
+      : [];
+    const selectedTypeSet = new Set(selectedTypes);
+    const useTypeFilter = selectedTypeSet.size > 0;
+
     const filteredLinks = [];
 
     for (const link of originalData.links) {
       const movies = Array.isArray(link.movies) ? link.movies : [];
-      // 过滤区间内电影（按“电影评分”）
+      // 过滤区间内电影（按评分和类型）
       const inRange = movies.filter(m => {
         const r = m && m.rating;
         if (r === null || r === undefined) return false;
         const rr = parseFloat(r);
         if (isNaN(rr)) return false;
-        return rr >= minRating && rr <= maxRating;
+
+        // 评分条件
+        if (!(rr >= minRating && rr <= maxRating)) return false;
+
+        // 类型条件：选了类型才过滤；多选 = 命中任意一个即可
+        if (useTypeFilter) {
+          const ts = normalizeTypesJS(m && m.types);
+          return ts.some(t => selectedTypeSet.has(t));
+        }
+        return true;
       });
+
 
       const coopInRange = inRange.length;
       if (coopInRange < minCoop) continue;
@@ -301,6 +366,8 @@
     document.getElementById('minCoop').value = 1;
     document.getElementById('minRating').value = 0;
     document.getElementById('maxRating').value = 10;
+    const sel = document.getElementById('typeSelect');
+    if (sel) Array.from(sel.options).forEach(o => o.selected = false);
     applyFilters();
   }
 

@@ -471,8 +471,14 @@
       jointTarget = name;
     }
 
-    const processedNodes = currentData.nodes.map(node => {
-      const isRelated = relatedNodes.has(node.name);
+        // ✅ 只保留“相关子图”：无关网络直接不渲染
+    const subNodes = currentData.nodes.filter(n => relatedNodes.has(n.name));
+    const subLinks = currentData.links.filter(l => {
+      const k = l.source + "-" + l.target;
+      return relatedLinks.has(k);
+    });
+
+    const processedNodes = subNodes.map(node => {
       const isTarget = targetNodes.some(n => n.name === node.name);
 
       let symbolSize = Math.max(15, Math.min(55, (node.movieCount || 1) * 2));
@@ -483,35 +489,31 @@
         symbolSize,
         itemStyle: {
           color: getRoleColor(node.role),
-          opacity: isRelated ? 1 : 0.25,
-          borderWidth: isTarget ? 4 : (isRelated ? 2 : 1),
+          opacity: 1,                 // ✅ 都是相关节点，直接全显示
+          borderWidth: isTarget ? 4 : 2,
           borderColor: isTarget ? '#ff0000' : '#333'
         },
         label: {
-          show: isRelated,
+          show: true,                 // ✅ 相关子图内全部显示标签
           fontSize: isTarget ? 14 : 10,
           fontWeight: isTarget ? 'bold' : 'normal'
         }
       };
     });
 
-    const processedLinks = currentData.links.map(link => {
-      const linkKey = link.source + "-" + link.target;
-      const isRelated = relatedLinks.has(linkKey);
-
+    const processedLinks = subLinks.map(link => {
       return {
         ...link,
         lineStyle: {
-          color: isRelated
-            ? (isJointSearch ? '#ff3333' : getRoleColor(currentData.nodes.find(n => n.name === link.source)?.role || 'other'))
-            : '#ccc',
-          width: isRelated ? Math.max(3, (link.value || 1)) : 0.5,
-          opacity: isRelated ? 1 : 0.08,
-          type: isRelated ? 'solid' : 'dashed'
+          color: (isJointSearch ? '#ff3333' : '#666'),
+          width: Math.max(3, (link.value || 1)),
+          opacity: 1,
+          type: 'solid'
         }
       };
     });
 
+    // ✅ 用“子图数据”直接刷新图（无关网络消失）
     chart.setOption({
       series: [{
         data: processedNodes,
@@ -520,6 +522,7 @@
         center: ['50%', '50%']
       }]
     }, false);
+
 
     if (jointTarget) focusOnNode(jointTarget);
     else if (targetNodes.length > 0) focusOnNode(targetNodes[0].name);
